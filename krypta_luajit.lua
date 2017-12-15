@@ -12,6 +12,7 @@
 local SALT = "" --Put the SALT between the quotes.
 local DIFFICULTY = 0 --Put desired difficulty here
 local CHECKSUM = nil --Put three digit hex checksum here - for example 0x123
+local DEFAULT_PREFIX = nill
 
 local MAXDIFC = 31
 
@@ -1418,7 +1419,6 @@ local function main()
 
 	CHECKSUM = CHECKSUM or tonumber(opts.checksum)
     
-    DEFAULT_PREFIX = nil
     if opts.prefix then
         DEFAULT_PREFIX = opts.prefix
     end    
@@ -1459,7 +1459,7 @@ local function main()
 	print(string.format("Masterkey checksum is: 0x%03x",chsum))
 	if CHECKSUM then
 		if tobit(CHECKSUM) ~= tobit(chsum) then
-			print("!!! CHECKSUM DOES NOT MATCH !!!")
+			print(color_text_red("!!! CHECKSUM DOES NOT MATCH !!!"))
 			error("nomatch")
 		else
 			print("Checksum matches.")
@@ -1467,22 +1467,27 @@ local function main()
 	end
 	--print("-masterkey- "..hex256(masterkey," "))
 	local strseed0 = dwords_to_chars(masterkey)
+    local show_default_prefix = DEFAULT_PREFIX or '';
 	while true do
 		print("\n----------------------------------")
-		print("Enter index with optional 'prefix:' (default='')")
+		print("Enter index with optional 'prefix:' (default='"..show_default_prefix.."'), prefix all:")
 		local ind0 = assert(io.read())
+
 		local prefix, index = ind0:match("^(.+):(.+)$")
 		local show = {hex = true, btcc = true, btcu = true, pwd15 = true, pwd40 = true, wrd12 = true, wrd24 = true}
         
         -- default prefix logic
         if not prefix and DEFAULT_PREFIX then
-            prefi = DEFAULT_PREFIX
-        end    
+            prefix = DEFAULT_PREFIX
+            index = ind0
+        end
+        --print_red("prefix"..prefix)    
 
 		if index then
-            if index == "all" then 
+            if prefix == "all" then
+                prefix = nil 
                 -- show all
-			else if not show[prefix] then
+			elseif not show[prefix] then
 				print("Error: Prefix '"..prefix.."' is invalid.")
 				show = false
 			else
@@ -1499,7 +1504,7 @@ local function main()
 		end
 
 		if show then
-			print(string.format("Entered index string: '%s' (%s chars)", index, #index))
+			print(string.format("Entered index string: '%s' (%s chars)", color_text_green(index), #index))
 			local rnd = new_random(sha256(index..zeroes..strseed0,"dwords"))
 			local result = get256bits(rnd)
 			assert(#result == 8)

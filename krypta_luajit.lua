@@ -1358,6 +1358,38 @@ local function parse_options()
 	return opts
 end
 
+local function color_text(text, color)
+    -- http://lua-users.org/lists/lua-l/2010-07/msg00454.html
+    term={
+    	output=io.write,
+    	--color = function (f) term.output("\027[",f,"m") end,
+        color = function (f) return "\027["..f.."m" end,
+    }
+    if(color == "red") then 
+        text = term.color(31)..text
+    end
+    if(color == "green") then 
+        text = term.color(32)..text
+    end
+    text = text.."\027[0m"
+    return text
+end
+
+local function color_text_red(text)
+    return color_text(text, "red")
+end
+local function color_text_green(text)
+    return color_text(text, "green")
+end
+
+local function print_red(text)
+    print(color_text(text, "red"))
+end
+
+local function print_green(text)
+    print(color_text(text, "green"))
+end 
+
 local function main()
 	BIN_TO_ANY = bin_to_any_module()
 	local opts = parse_options()
@@ -1462,9 +1494,9 @@ local function main()
 			local ichksum = sha256(strseed0..zeroes..dwords_to_chars(result)..zeroes.."index checksum", "dwords")
 			local chw1, chw2 = band(ichksum[1], 0x7ff), band(ichksum[2], 0x7ff)
 			if prefix then
-				print(string.format("Checkwords for this specific master passphrase, index and prefix (%s:): '%s'", prefix, checkwords(strseed0..dwords_to_chars(result)..prefix, 3)))
+				print(string.format("Checkwords for this specific master passphrase, index and prefix (%s:): '%s'", prefix, color_text_green(checkwords(strseed0..dwords_to_chars(result)..prefix, 3))))
 			else
-				print(string.format("Checkwords for this specific master passphrase and index: '%s'", checkwords(strseed0..dwords_to_chars(result))))
+				print(string.format("Checkwords for this specific master passphrase and index: '%s'", color_text_green(checkwords(strseed0..dwords_to_chars(result)))))
 			end
 
 			if show.hex then
@@ -1482,9 +1514,9 @@ local function main()
 					key = "btcu"
 				end
 				if show[key] then
-					print(string.format("(%s:) BTC WIF privkey (%s): %s", key, typ, privkeys[typ]))
+					print(string.format("(%s:) BTC WIF privkey (%s): %s", key, typ, color_text_red(privkeys[typ])))
 					if pubkey then
-						print(string.format("(%s:) Corresponding BTC address (%s): %s", key, typ, wif(pubkey, typ)))
+						print(string.format("(%s:) Corresponding BTC address (%s): %s", key, typ, color_text_green(wif(pubkey, typ))))
 					else
 						print("("..typ.." BTC address generation disabled by 'no_btc' user option)")
 					end

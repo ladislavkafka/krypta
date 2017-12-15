@@ -1333,7 +1333,7 @@ local function test(opts)
 end
 
 local function parse_options()
-	local allowed = {"difficulty", "salt", "test", "checksum", "no_btc"}
+	local allowed = {"difficulty", "salt", "test", "checksum", "no_btc", "prefix"}
 	for i, opt in ipairs(allowed) do
 		allowed[opt] = true
 	end
@@ -1417,6 +1417,11 @@ local function main()
 	end
 
 	CHECKSUM = CHECKSUM or tonumber(opts.checksum)
+    
+    DEFAULT_PREFIX = nil
+    if opts.prefix then
+        DEFAULT_PREFIX = opts.prefix
+    end    
 
 	if CHECKSUM then
 		assert(CHECKSUM >= 0 and CHECKSUM <= 0xfff, "Invalid checksum value")
@@ -1468,9 +1473,16 @@ local function main()
 		local ind0 = assert(io.read())
 		local prefix, index = ind0:match("^(.+):(.+)$")
 		local show = {hex = true, btcc = true, btcu = true, pwd15 = true, pwd40 = true, wrd12 = true, wrd24 = true}
+        
+        -- default prefix logic
+        if not prefix and DEFAULT_PREFIX then
+            prefi = DEFAULT_PREFIX
+        end    
 
 		if index then
-			if not show[prefix] then
+            if index == "all" then 
+                -- show all
+			else if not show[prefix] then
 				print("Error: Prefix '"..prefix.."' is invalid.")
 				show = false
 			else
@@ -1535,7 +1547,7 @@ local function main()
 				print("(wrd24:) BIP39/24: "..bip39(result))
 			end
 		else
-			print("Nothing to show. Enter valid prefix or leave the prefix out.")
+			print(color_text_red("Nothing to show. Enter valid prefix or leave the prefix out."))
 		end
 	end
 end

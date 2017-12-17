@@ -12,7 +12,7 @@
 local SALT = "" --Put the SALT between the quotes.
 local DIFFICULTY = 0 --Put desired difficulty here
 local CHECKSUM = nil --Put three digit hex checksum here - for example 0x123
-local DEFAULT_PREFIX = nill
+local DEFAULT_PREFIX = nil
 
 local MAXDIFC = 31
 
